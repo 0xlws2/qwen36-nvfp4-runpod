@@ -25,7 +25,12 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
         hf_transfer \
         huggingface_hub
 
-RUN mkdir -p /data/models /data/logs
+# RunPod serverless SDK (for Queue-based handler mode)
+RUN python3 -m pip install --no-cache-dir --break-system-packages \
+        runpod \
+        requests
+
+RUN mkdir -p /data/models /data/logs /src
 
 # --- Caddy: /ping shim + SSE-friendly reverse proxy for RunPod LB ---------
 ARG CADDY_VERSION=2.8.4
@@ -38,7 +43,11 @@ COPY Caddyfile /etc/caddy/Caddyfile
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY runpod-entrypoint.sh /usr/local/bin/runpod-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/runpod-entrypoint.sh
+COPY queue-entrypoint.sh /usr/local/bin/queue-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/runpod-entrypoint.sh /usr/local/bin/queue-entrypoint.sh
+
+# Handler for Queue-based serverless mode
+COPY src/handler.py /src/handler.py
 
 ENV MODEL_DIR=/data/models
 ENV LOG_DIR=/data/logs
@@ -61,9 +70,7 @@ ENV PUBLIC_PORT=8000
 ENV KV_CACHE_DTYPE=fp8
 ENV MTP_SPECULATIVE_TOKENS=2
 
-# Caddy listens on PUBLIC_PORT (RunPod LB attaches here).
-# vLLM listens on PORT (internal, 127.0.0.1 only — proxied by caddy).
-EXPOSE 8000
-
-ENTRYPOINT ["/usr/local/bin/runpod-entrypoint.sh"]
+# Default: Queue-based mode (works with RunPod's default serverless endpoint type)
+# Override with runpod-entrypoint.sh for Load Balancer mode
+ENTRYPOINT ["/usr/local/bin/queue-entrypoint.sh"]
 CMD ["serve"]
