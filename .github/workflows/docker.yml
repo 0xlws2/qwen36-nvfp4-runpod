@@ -50,7 +50,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64
           build-args: |
-            CUDA_VERSION=13.3.1-cudnn-devel-ubuntu24.04
+            CUDA_VERSION=13.3.0-cudnn-devel-ubuntu24.04
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

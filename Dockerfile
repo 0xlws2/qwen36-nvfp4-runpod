@@ -1,4 +1,4 @@
-ARG CUDA_VERSION=13.3.1-cudnn-devel-ubuntu24.04
+ARG CUDA_VERSION=13.3.0-cudnn-devel-ubuntu24.04
 FROM nvidia/cuda:${CUDA_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive
