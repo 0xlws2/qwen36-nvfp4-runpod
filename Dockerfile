@@ -67,8 +67,8 @@ ENV REPETITION_PENALTY=1.0
 ENV REASONING_PARSER=qwen3
 ENV MODEL_DOWNLOAD=1
 ENV PUBLIC_PORT=8000
-ENV KV_CACHE_DTYPE=fp8
-ENV MTP_SPECULATIVE_TOKENS=2
+ENV KV_CACHE_DTYPE=auto
+ENV MTP_SPECULATIVE_TOKENS=0
 
 # Default: Queue-based mode (works with RunPod's default serverless endpoint type)
 # Override with runpod-entrypoint.sh for Load Balancer mode

@@ -60,9 +60,13 @@ case "$CMD" in
         REASONING_PARSER_FLAG=""
         [[ -n "${REASONING_PARSER:-}" ]] && REASONING_PARSER_FLAG="--reasoning-parser ${REASONING_PARSER}"
 
-        # --- MTP speculative decoding (NVFP4 Fast variant supports MTP) -----
-        MTP_TOKENS="${MTP_SPECULATIVE_TOKENS:-2}"
-        SPEC_CONFIG="{\"method\": \"mtp\", \"num_speculative_tokens\": ${MTP_TOKENS}}"
+        # --- MTP speculative decoding (disabled by default - may crash on RTX 5090) ---
+        MTP_TOKENS="${MTP_SPECULATIVE_TOKENS:-0}"
+        SPEC_FLAG=""
+        if [[ "${MTP_TOKENS}" -gt 0 ]]; then
+            SPEC_CONFIG="{\"method\": \"mtp\", \"num_speculative_tokens\": ${MTP_TOKENS}}"
+            SPEC_FLAG="--speculative-config \"${SPEC_CONFIG}\""
+        fi
 
         echo "Starting vLLM server (NVFP4):"
         echo "  Model              : ${MODEL_DIR}"
@@ -73,7 +77,7 @@ case "$CMD" in
         echo "  Max num seqs       : ${MAX_NUM_SEQS}"
         echo "  Max batched tokens : ${MAX_NUM_BATCHED_TOKENS}"
         echo "  GPU memory util    : ${GPU_MEMORY_UTIL}"
-        echo "  KV cache dtype     : ${KV_CACHE_DTYPE:-fp8}"
+        echo "  KV cache dtype     : ${KV_CACHE_DTYPE:-auto}"
         echo "  MTP tokens         : ${MTP_TOKENS}"
         echo "  Generation config  : ${GEN_CONFIG}"
         echo ""
@@ -83,7 +87,7 @@ case "$CMD" in
             --override-generation-config "$GEN_CONFIG" \
             --port "$PORT" \
             --dtype bfloat16 \
-            --kv-cache-dtype "${KV_CACHE_DTYPE:-fp8}" \
+            --kv-cache-dtype "${KV_CACHE_DTYPE:-auto}" \
             --enable-prefix-caching \
             --enable-chunked-prefill \
             --tensor-parallel-size "$TENSOR_PARALLEL" \
@@ -96,8 +100,10 @@ case "$CMD" in
             --tool-call-parser qwen3_coder \
             --trust-remote-code \
             ${REASONING_PARSER_FLAG} \
-            --speculative-config "$SPEC_CONFIG" \
+            ${SPEC_FLAG} \
             2>&1 | tee -a "${LOG_DIR}/vllm.log"
+        
+        echo "[entrypoint] vLLM process exited with code $?"
         ;;
 
     *)
