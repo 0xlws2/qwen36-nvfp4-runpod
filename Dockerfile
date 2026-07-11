@@ -51,9 +51,9 @@ COPY src/handler.py /src/handler.py
 
 ENV MODEL_DIR=/data/models
 ENV LOG_DIR=/data/logs
-ENV MODEL_REPO=unsloth/Qwen3.6-35B-A3B-NVFP4-Fast
+ENV MODEL_REPO=Qwen/Qwen3-0.6B
 ENV PORT=1234
-ENV SERVED_MODEL_NAME=qwen3.6-35b-nvfp4
+ENV SERVED_MODEL_NAME=qwen3-0.6b
 ENV MAX_MODEL_LEN=32768
 ENV MAX_NUM_SEQS=256
 ENV MAX_NUM_BATCHED_TOKENS=8192
@@ -67,8 +67,6 @@ ENV REPETITION_PENALTY=1.0
 ENV REASONING_PARSER=qwen3
 ENV MODEL_DOWNLOAD=1
 ENV PUBLIC_PORT=8000
-ENV KV_CACHE_DTYPE=auto
-ENV MTP_SPECULATIVE_TOKENS=0
 
 # Default: Queue-based mode (works with RunPod's default serverless endpoint type)
 # Override with runpod-entrypoint.sh for Load Balancer mode
