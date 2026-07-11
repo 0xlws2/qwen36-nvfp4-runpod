@@ -84,24 +84,14 @@ case "$CMD" in
 
         vllm serve "$MODEL_DIR" \
             --served-model-name "$SERVED_MODEL_NAME" \
-            --override-generation-config "$GEN_CONFIG" \
             --port "$PORT" \
-            --dtype bfloat16 \
-            --kv-cache-dtype "${KV_CACHE_DTYPE:-auto}" \
-            --enable-prefix-caching \
-            --enable-chunked-prefill \
-            --tensor-parallel-size "$TENSOR_PARALLEL" \
-            --max-model-len "$MAX_MODEL_LEN" \
-            --max-num-seqs "$MAX_NUM_SEQS" \
-            --max-num-batched-tokens "$MAX_NUM_BATCHED_TOKENS" \
-            --gpu-memory-utilization "$GPU_MEMORY_UTIL" \
-            --disable-custom-all-reduce \
-            --enable-auto-tool-choice \
-            --tool-call-parser qwen3_coder \
+            --host 0.0.0.0 \
+            --max-model-len "${MAX_MODEL_LEN}" \
+            --gpu-memory-utilization "${GPU_MEMORY_UTIL}" \
             --trust-remote-code \
-            ${REASONING_PARSER_FLAG} \
-            ${SPEC_FLAG} \
             2>&1 | tee -a "${LOG_DIR}/vllm.log"
+        
+        echo "[entrypoint] vLLM exited with code $?"
         
         echo "[entrypoint] vLLM process exited with code $?"
         ;;
