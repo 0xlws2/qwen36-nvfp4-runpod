@@ -70,5 +70,5 @@ ENV PUBLIC_PORT=8000
 
 # Default: Queue-based mode (works with RunPod's default serverless endpoint type)
 # Override with runpod-entrypoint.sh for Load Balancer mode
-ENTRYPOINT ["/usr/local/bin/queue-entrypoint.sh"]
+ENTRYPOINT ["python", "-u", "/src/handler.py"]
 CMD ["serve"]
