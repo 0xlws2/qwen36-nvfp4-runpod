@@ -8,6 +8,8 @@ and returns the OpenAI-compatible response.
 
 import os
 import time
+import subprocess
+import threading
 import requests
 import runpod
 
@@ -116,7 +118,35 @@ def handler(job):
         return {"error": f"Request failed: {str(e)}"}
 
 
+def _start_vllm_subprocess():
+    """Start vLLM serve as a subprocess (must be called before runpod.serverless.start)."""
+    model_dir = os.getenv("MODEL_DIR", "/data/models")
+    port = os.getenv("PORT", "1234")
+    served_name = os.getenv("SERVED_MODEL_NAME", "qwen3-0.6b")
+    max_model_len = os.getenv("MAX_MODEL_LEN", "32768")
+    gpu_util = os.getenv("GPU_MEMORY_UTIL", "0.90")
+    
+    cmd = [
+        "vllm", "serve", model_dir,
+        "--served-model-name", served_name,
+        "--port", port,
+        "--host", "0.0.0.0",
+        "--max-model-len", max_model_len,
+        "--gpu-memory-utilization", gpu_util,
+        "--trust-remote-code",
+    ]
+    
+    print(f"[handler] Starting vLLM: {' '.join(cmd[:6])}...")
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    print(f"[handler] vLLM PID: {proc.pid}")
+    return proc
+
+
 if __name__ == "__main__":
+    # Start vLLM in subprocess FIRST (before RunPod takes over)
+    _vllm_proc = _start_vllm_subprocess()
+    
+    # Wait for vLLM to be ready
     # Wait for vLLM before accepting any jobs
     wait_for_vllm()
 
